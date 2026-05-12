@@ -65,3 +65,8 @@ uvicorn main:app --reload
 ## Notes
 - The SQLite file (`chat.db`) is created automatically on startup.
 - Open two browser tabs and pick different users to test real-time messaging.
+
+## 🚀 Live Project Links
+
+* **Live Website:** [https://vibe-coding-chat.onrender.com](https://vibe-coding-chat.onrender.com)
+* **Video Demo:** [Watch the Demo on YouTube](https://youtu.be/Q8mIT55fBXc)
