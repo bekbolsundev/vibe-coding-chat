@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speed Chat</title>
+  <style>
+    :root {
+      --bg: #f2f3f5;
+      --surface: #ffffff;
+      --surface-muted: #f7f7f8;
+      --line: #dcdfe3;
+      --text: #1d2129;
+      --muted: #67707a;
+      --accent: #1768ac;
+      --accent-2: #0f4e82;
+      --ok: #217a4a;
+      --danger: #a33030;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, #ffffff 0%, #eef1f4 70%);
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      height: 100vh;
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      gap: 12px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: var(--surface-muted);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    input, button {
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      font: inherit;
+      padding: 9px 10px;
+    }
+
+    input:focus {
+      outline: 2px solid #9ec3e5;
+      border-color: #7eadd7;
+    }
+
+    button {
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    button:hover {
+      background: var(--accent-2);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--text);
+      border-color: var(--line);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0;
+    }
+
+    .status {
+      min-height: 18px;
+      font-size: 12px;
+    }
+
+    .status.ok {
+      color: var(--ok);
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .user-list {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: auto;
+      background: #fff;
+      flex: 1;
+    }
+
+    .user-item {
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .user-item:last-child {
+      border-bottom: 0;
+    }
+
+    .user-item:hover {
+      background: #f4f8fc;
+    }
+
+    .user-item.active {
+      background: #e7f0f9;
+    }
+
+    .chat {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 0;
+    }
+
+    .chat-header {
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .chat-title {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .messages {
+      padding: 14px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .msg {
+      max-width: 72%;
+      border-radius: 10px;
+      padding: 9px 10px;
+      line-height: 1.35;
+      font-size: 14px;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--line);
+    }
+
+    .msg.mine {
+      margin-left: auto;
+      background: #d9ecff;
+      border-color: #b8d9f8;
+    }
+
+    .msg.other {
+      margin-right: auto;
+      background: #fff;
+    }
+
+    .msg-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .composer {
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+      padding: 10px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 300px 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1 class="title">Speed Chat</h1>
+
+      <div class="card">
+        <input id="newUsername" placeholder="Register username" maxlength="50" />
+        <button id="registerBtn">Register User</button>
+        <p class="hint">Use two browser tabs with different users to test real-time chat.</p>
+      </div>
+
+      <div class="card">
+        <label for="currentUser">Current User</label>
+        <select id="currentUser"></select>
+      </div>
+
+      <input id="userSearch" placeholder="Search users" />
+      <button id="refreshUsers" class="btn-secondary">Refresh User List</button>
+      <div id="sidebarStatus" class="status"></div>
+
+      <div id="userList" class="user-list"></div>
+    </aside>
+
+    <main class="chat">
+      <header class="chat-header">
+        <h2 id="chatTitle" class="chat-title">Select a conversation</h2>
+        <input id="messageSearch" placeholder="Search messages in conversation" />
+      </header>
+
+      <section id="messages" class="messages">
+        <p class="empty">No active conversation.</p>
+      </section>
+
+      <form id="composer" class="composer">
+        <input id="messageInput" placeholder="Type a message" maxlength="2000" />
+        <button type="submit">Send</button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      users: [],
+      currentUserId: null,
+      activePeerId: null,
+      socket: null,
+      reconnectTimer: null,
+      reconnectAttempts: 0,
+      intentionalClose: false,
+      messageSearchText: "",
+      currentMessages: [],
+      currentMessageIds: new Set(),
+    };
+
+    const els = {
+      newUsername: document.getElementById("newUsername"),
+      registerBtn: document.getElementById("registerBtn"),
+      currentUser: document.getElementById("currentUser"),
+      userSearch: document.getElementById("userSearch"),
+      refreshUsers: document.getElementById("refreshUsers"),
+      sidebarStatus: document.getElementById("sidebarStatus"),
+      userList: document.getElementById("userList"),
+      chatTitle: document.getElementById("chatTitle"),
+      messages: document.getElementById("messages"),
+      composer: document.getElementById("composer"),
+      messageInput: document.getElementById("messageInput"),
+      messageSearch: document.getElementById("messageSearch"),
+    };
+
+    function setStatus(text, type = "ok") {
+      els.sidebarStatus.className = `status ${type}`;
+      els.sidebarStatus.textContent = text;
+      if (text) {
+        setTimeout(() => {
+          els.sidebarStatus.textContent = "";
+          els.sidebarStatus.className = "status";
+        }, 3000);
+      }
+    }
+
+    function userById(id) {
+      return state.users.find((u) => u.id === id) || null;
+    }
+
+    function matchesActiveConversation(message) {
+      return Boolean(
+        state.currentUserId &&
+        state.activePeerId &&
+        ((message.sender_id === state.currentUserId && message.receiver_id === state.activePeerId) ||
+          (message.sender_id === state.activePeerId && message.receiver_id === state.currentUserId))
+      );
+    }
+
+    function matchesSearchText(message) {
+      if (!state.messageSearchText) {
+        return true;
+      }
+      return message.content.toLowerCase().includes(state.messageSearchText.toLowerCase());
+    }
+
+    function messageElement(message) {
+      const mine = message.sender_id === state.currentUserId;
+      const box = document.createElement("article");
+      box.className = `msg ${mine ? "mine" : "other"}`;
+
+      const content = document.createElement("div");
+      content.textContent = message.content;
+      box.appendChild(content);
+
+      const meta = document.createElement("div");
+      const date = new Date(message.created_at);
+      meta.className = "msg-meta";
+      meta.textContent = `${mine ? "You" : userById(message.sender_id)?.username || "User"} • ${date.toLocaleString()}`;
+      box.appendChild(meta);
+
+      return box;
+    }
+
+    function appendMessage(message) {
+      if (!message || state.currentMessageIds.has(message.id)) {
+        return;
+      }
+
+      if (!matchesActiveConversation(message) || !matchesSearchText(message)) {
+        return;
+      }
+
+      state.currentMessageIds.add(message.id);
+      state.currentMessages.push(message);
+
+      if (els.messages.querySelector(".empty")) {
+        els.messages.innerHTML = "";
+      }
+
+      els.messages.appendChild(messageElement(message));
+      els.messages.scrollTop = els.messages.scrollHeight;
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        ...options,
+      });
+      if (!res.ok) {
+        let msg = `Request failed: ${res.status}`;
+        try {
+          const data = await res.json();
+          if (data.detail) msg = data.detail;
+        } catch (_) {}
+        throw new Error(msg);
+      }
+      return res.json();
+    }
+
+    function renderCurrentUserSelect() {
+      els.currentUser.innerHTML = "";
+      for (const user of state.users) {
+        const option = document.createElement("option");
+        option.value = String(user.id);
+        option.textContent = `${user.username} (#${user.id})`;
+        if (user.id === state.currentUserId) option.selected = true;
+        els.currentUser.appendChild(option);
+      }
+
+      if (!state.currentUserId && state.users.length > 0) {
+        state.currentUserId = state.users[0].id;
+      }
+      if (state.currentUserId) {
+        els.currentUser.value = String(state.currentUserId);
+      }
+    }
+
+    function renderUserList() {
+      const searchText = els.userSearch.value.trim().toLowerCase();
+      const visible = state.users.filter((u) => {
+        if (u.id === state.currentUserId) return false;
+        return !searchText || u.username.toLowerCase().includes(searchText);
+      });
+
+      els.userList.innerHTML = "";
+      if (visible.length === 0) {
+        els.userList.innerHTML = '<div class="user-item">No users found</div>';
+        return;
+      }
+
+      for (const user of visible) {
+        const div = document.createElement("div");
+        div.className = "user-item" + (state.activePeerId === user.id ? " active" : "");
+        div.innerHTML = `<span>${user.username}</span><span>#${user.id}</span>`;
+        div.addEventListener("click", () => {
+          state.activePeerId = user.id;
+          renderUserList();
+          loadHistory();
+        });
+        els.userList.appendChild(div);
+      }
+    }
+
+    function renderMessages(messages) {
+      els.messages.innerHTML = "";
+      state.currentMessages = Array.isArray(messages) ? [...messages] : [];
+      state.currentMessageIds = new Set(state.currentMessages.map((message) => message.id));
+
+      if (!state.currentUserId || !state.activePeerId) {
+        els.messages.innerHTML = '<p class="empty">No active conversation.</p>';
+        return;
+      }
+
+      if (messages.length === 0) {
+        els.messages.innerHTML = '<p class="empty">No messages yet.</p>';
+        return;
+      }
+
+      for (const m of messages) {
+        els.messages.appendChild(messageElement(m));
+      }
+
+      els.messages.scrollTop = els.messages.scrollHeight;
+    }
+
+    async function loadUsers() {
+      state.users = await api("/users");
+      renderCurrentUserSelect();
+      renderUserList();
+    }
+
+    function scheduleReconnect() {
+      if (!state.currentUserId) {
+        return;
+      }
+
+      if (state.reconnectTimer) {
+        return;
+      }
+
+      const delay = Math.min(5000, 500 * Math.pow(2, state.reconnectAttempts));
+      state.reconnectAttempts += 1;
+
+      state.reconnectTimer = window.setTimeout(() => {
+        state.reconnectTimer = null;
+        connectSocket();
+      }, delay);
+    }
+
+    async function loadHistory() {
+      if (!state.currentUserId || !state.activePeerId) {
+        renderMessages([]);
+        return;
+      }
+
+      const peer = userById(state.activePeerId);
+      els.chatTitle.textContent = peer ? `Chat with ${peer.username}` : "Conversation";
+
+      let url = `/messages/history?user1_id=${state.currentUserId}&user2_id=${state.activePeerId}`;
+      if (state.messageSearchText) {
+        const q = encodeURIComponent(state.messageSearchText);
+        url = `/messages/search?q=${q}&user_id=${state.currentUserId}&other_user_id=${state.activePeerId}`;
+      }
+
+      const messages = await api(url);
+      renderMessages(messages);
+    }
+
+    function connectSocket() {
+      if (!state.currentUserId) return;
+
+      if (state.socket) {
+        state.intentionalClose = true;
+        state.socket.close();
+        state.socket = null;
+      }
+
+      if (state.reconnectTimer) {
+        window.clearTimeout(state.reconnectTimer);
+        state.reconnectTimer = null;
+      }
+
+      state.intentionalClose = false;
+
+      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+      const wsUrl = `${protocol}://${window.location.host}/ws/${state.currentUserId}`;
+      console.log("Connecting websocket:", wsUrl);
+      const socket = new WebSocket(wsUrl);
+      state.socket = socket;
+
+      socket.addEventListener("open", () => {
+        state.reconnectAttempts = 0;
+        setStatus("Real-time connection active", "ok");
+      });
+
+      socket.addEventListener("message", (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.type === "message") {
+            appendMessage(payload.data);
+          }
+        } catch (_) {}
+      });
+
+      socket.addEventListener("error", (event) => {
+        console.error("WebSocket error:", event);
+      });
+
+      socket.addEventListener("close", (event) => {
+        if (socket !== state.socket) {
+          return;
+        }
+
+        if (state.intentionalClose) {
+          state.intentionalClose = false;
+          return;
+        }
+
+        console.warn("WebSocket closed:", {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean,
+        });
+        setStatus("Real-time disconnected, reconnecting...", "error");
+        scheduleReconnect();
+      });
+    }
+
+    els.registerBtn.addEventListener("click", async () => {
+      const username = els.newUsername.value.trim();
+      if (!username) {
+        setStatus("Username is required", "error");
+        return;
+      }
+
+      try {
+        const user = await api("/users/register", {
+          method: "POST",
+          body: JSON.stringify({ username }),
+        });
+        els.newUsername.value = "";
+        await loadUsers();
+        state.currentUserId = user.id;
+        renderCurrentUserSelect();
+        renderUserList();
+        connectSocket();
+        setStatus(`Registered ${user.username}`, "ok");
+      } catch (err) {
+        setStatus(err.message, "error");
+      }
+    });
+
+    els.refreshUsers.addEventListener("click", async () => {
+      try {
+        await loadUsers();
+      } catch (err) {
+        setStatus(err.message, "error");
+      }
+    });
+
+    els.currentUser.addEventListener("change", () => {
+      state.currentUserId = Number(els.currentUser.value);
+      if (state.activePeerId === state.currentUserId) {
+        state.activePeerId = null;
+      }
+      renderUserList();
+      connectSocket();
+      loadHistory();
+    });
+
+    els.userSearch.addEventListener("input", () => {
+      renderUserList();
+    });
+
+    els.messageSearch.addEventListener("input", () => {
+      state.messageSearchText = els.messageSearch.value.trim();
+      loadHistory();
+    });
+
+    els.composer.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!state.currentUserId || !state.activePeerId) {
+        setStatus("Select a user to chat with", "error");
+        return;
+      }
+
+      const content = els.messageInput.value.trim();
+      if (!content) {
+        setStatus("Message cannot be empty", "error");
+        return;
+      }
+
+      try {
+        const message = await api("/messages/send", {
+          method: "POST",
+          body: JSON.stringify({
+            sender_id: state.currentUserId,
+            receiver_id: state.activePeerId,
+            content,
+          }),
+        });
+        els.messageInput.value = "";
+        appendMessage(message);
+      } catch (err) {
+        setStatus(err.message, "error");
+      }
+    });
+
+    async function boot() {
+      try {
+        await loadUsers();
+        connectSocket();
+        await loadHistory();
+      } catch (err) {
+        setStatus(err.message, "error");
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>
