@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Speed Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
       --bg: #f2f3f5;
@@ -225,42 +226,44 @@
     }
   </style>
 </head>
-<body>
-  <div class="layout">
-    <aside class="sidebar">
-      <h1 class="title">Speed Chat</h1>
+<body class="bg-slate-100 text-slate-900">
+  <div class="layout flex min-h-screen flex-col md:flex-row">
+    <aside class="sidebar w-full shrink-0 border-b border-slate-200 bg-white p-4 md:w-80 md:border-b-0 md:border-r md:p-4">
+      <div class="flex items-center justify-between gap-3 md:block">
+        <h1 class="title text-lg font-bold tracking-tight text-slate-900 md:text-xl">Speed Chat</h1>
+      </div>
 
-      <div class="card">
-        <input id="newUsername" placeholder="Register username" maxlength="50" />
-        <button id="registerBtn">Register User</button>
+      <div class="card rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-sm">
+        <input id="newUsername" class="min-h-11 rounded-lg border border-slate-300 px-3 py-3 text-base" placeholder="Register username" maxlength="50" />
+        <button id="registerBtn" class="min-h-11 rounded-lg bg-sky-700 px-4 py-3 font-medium text-white active:scale-[0.99]">Register User</button>
         <p class="hint">Use two browser tabs with different users to test real-time chat.</p>
       </div>
 
-      <div class="card">
+      <div class="card rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-sm">
         <label for="currentUser">Current User</label>
-        <select id="currentUser"></select>
+        <select id="currentUser" class="min-h-11 rounded-lg border border-slate-300 px-3 py-3 text-base"></select>
       </div>
 
-      <input id="userSearch" placeholder="Search users" />
-      <button id="refreshUsers" class="btn-secondary">Refresh User List</button>
+      <input id="userSearch" class="min-h-11 rounded-lg border border-slate-300 px-3 py-3 text-base" placeholder="Search users" />
+      <button id="refreshUsers" class="btn-secondary min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-900">Refresh User List</button>
       <div id="sidebarStatus" class="status"></div>
 
-      <div id="userList" class="user-list"></div>
+      <div id="userList" class="user-list min-h-32 rounded-xl border border-slate-200 bg-white md:flex-1"></div>
     </aside>
 
-    <main class="chat">
-      <header class="chat-header">
-        <h2 id="chatTitle" class="chat-title">Select a conversation</h2>
-        <input id="messageSearch" placeholder="Search messages in conversation" />
+    <main class="chat flex min-h-0 flex-1 flex-col bg-slate-100">
+      <header class="chat-header flex flex-col gap-3 border-b border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between md:p-4">
+        <h2 id="chatTitle" class="chat-title text-base font-semibold text-slate-900 md:text-lg">Select a conversation</h2>
+        <input id="messageSearch" class="min-h-11 w-full rounded-lg border border-slate-300 px-3 py-3 text-base sm:max-w-sm" placeholder="Search messages in conversation" />
       </header>
 
-      <section id="messages" class="messages">
+      <section id="messages" class="messages flex-1 overflow-y-auto p-3 md:p-4">
         <p class="empty">No active conversation.</p>
       </section>
 
-      <form id="composer" class="composer">
-        <input id="messageInput" placeholder="Type a message" maxlength="2000" />
-        <button type="submit">Send</button>
+      <form id="composer" class="composer sticky bottom-0 grid grid-cols-[1fr_auto] gap-2 border-t border-slate-200 bg-white p-3 md:p-4">
+        <input id="messageInput" class="min-h-12 rounded-lg border border-slate-300 px-3 py-3 text-base" placeholder="Type a message" maxlength="2000" />
+        <button type="submit" class="min-h-12 rounded-lg bg-sky-700 px-5 py-3 font-medium text-white active:scale-[0.99]">Send</button>
       </form>
     </main>
   </div>
