@@ -333,3 +333,11 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int) -> None:
             user_sockets.discard(websocket)
             if not user_sockets:
                 del active_connections[user_id]
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+async def read_index():
+    return FileResponse("static/index.html")
+    
